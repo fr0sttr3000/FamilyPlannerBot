@@ -1,0 +1,48 @@
+# Секреты — никогда в git!
+.env
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+dist/
+*.egg-info/
+.eggs/
+*.egg
+
+# Virtual environments
+.venv/
+venv/
+ENV/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Testing
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Docker
+*.log
+
+# Backups
+backups/
+
+# macOS
+.DS_Store
+
+# SDLC-артефакты (внутренняя документация, не для репозитория)
+stage1-planning/
+stage2-requirements/
+stage3-design/
+stage4-dev/
+stage5-testing/
+stage6-deploy/
+stage7-ops/

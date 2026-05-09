@@ -1,0 +1,4 @@
+"""Middleware для aiogram."""
+from app.bot.middlewares.auth import AuthMiddleware
+
+__all__ = ["AuthMiddleware"]

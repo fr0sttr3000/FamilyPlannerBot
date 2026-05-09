@@ -1,0 +1,23 @@
+# FamilyPlannerBot — зависимости Python
+# Версии зафиксированы для воспроизводимости сборки
+
+# Telegram Bot Framework (ADR-01)
+aiogram>=3.7.0,<4.0.0
+
+# База данных (ADR-03)
+sqlalchemy>=2.0.0,<3.0.0
+asyncpg>=0.29.0,<1.0.0
+psycopg2-binary>=2.9.0,<3.0.0
+
+# Миграции
+alembic>=1.13.0,<2.0.0
+
+# Планировщик (ADR-02)
+APScheduler>=3.10.0,<4.0.0
+
+# Конфигурация (NFR-SEC-01)
+pydantic>=2.0.0,<3.0.0
+pydantic-settings>=2.0.0,<3.0.0
+
+# Timezone
+pytz>=2024.1
