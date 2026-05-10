@@ -33,6 +33,21 @@ class ReminderRepository(BaseRepository[Reminder]):
         result = await self._session.execute(stmt)
         return list(result.scalars().all())
 
+    async def get_due(self) -> list[Reminder]:
+        """Напоминания для доставки: pending, scheduled_at <= now, не удалены."""
+        now = datetime.now(timezone.utc)
+        stmt = (
+            select(Reminder)
+            .where(
+                Reminder.status == REMINDER_STATUS_PENDING,
+                Reminder.scheduled_at <= now,
+                Reminder.deleted_at.is_(None),
+            )
+            .order_by(Reminder.scheduled_at.asc())
+        )
+        result = await self._session.execute(stmt)
+        return list(result.scalars().all())
+
     async def soft_delete(self, reminder_id: int, user_id: int) -> Reminder | None:
         """Soft delete напоминания. Проверяет владельца. Возвращает None при ошибке."""
         reminder = await self.get_by_id(reminder_id)

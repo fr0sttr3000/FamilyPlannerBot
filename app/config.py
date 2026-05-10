@@ -17,6 +17,7 @@ class Settings(BaseSettings):
         env_file=".env",
         env_file_encoding="utf-8",
         case_sensitive=False,
+        extra="ignore",
     )
 
     # Telegram
@@ -39,10 +40,12 @@ class Settings(BaseSettings):
 
     @field_validator("allowed_users", mode="before")
     @classmethod
-    def parse_allowed_users(cls, v: str | frozenset) -> frozenset[int]:
-        """Парсит строку '123,456,789' в frozenset целых чисел."""
+    def parse_allowed_users(cls, v: str | list | set | frozenset) -> frozenset[int]:
+        """Парсит строку '123,456,789', list, set или frozenset в frozenset целых чисел."""
         if isinstance(v, frozenset):
             return v
+        if isinstance(v, (list, set)):
+            return frozenset(int(uid) for uid in v)
         return frozenset(int(uid.strip()) for uid in str(v).split(",") if uid.strip())
 
     @property

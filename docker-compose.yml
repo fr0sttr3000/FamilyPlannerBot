@@ -9,8 +9,6 @@
 #   - JSON-file logging с ротацией
 #   - Порт 5432 НЕ публикуется на хост (NFR-SEC-05)
 
-version: "3.9"
-
 services:
   bot:
     build:

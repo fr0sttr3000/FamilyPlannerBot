@@ -69,7 +69,7 @@ async def main() -> None:
     dp = build_dispatcher()
 
     # 4. Запустить планировщик
-    scheduler = create_scheduler()
+    scheduler = create_scheduler(bot)
     scheduler.start()
     logger.info("APScheduler запущен")
 
