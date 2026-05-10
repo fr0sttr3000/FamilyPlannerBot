@@ -1,6 +1,7 @@
 """Репозиторий пользователей."""
 from datetime import datetime, timezone
 
+from sqlalchemy import func, select
 from sqlalchemy.dialects.postgresql import insert as pg_insert
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -39,3 +40,25 @@ class UserRepository(BaseRepository[User]):
         result = await self._session.execute(stmt)
         await self._session.flush()
         return result.scalar_one()
+
+    async def get_by_username(self, username: str) -> User | None:
+        """Найти пользователя по @username (регистронезависимо).
+
+        Args:
+            username: username с @ или без. Поиск case-insensitive.
+
+        Returns:
+            Пользователя или None если не найден.
+
+        Note:
+            Telegram не гарантирует наличие username. Пользователь должен
+            хотя бы раз написать боту /start, чтобы попасть в таблицу users.
+        """
+        clean = username.lstrip("@")
+        stmt = (
+            select(User)
+            .where(func.lower(User.username) == clean.lower())
+            .limit(1)
+        )
+        result = await self._session.execute(stmt)
+        return result.scalar_one_or_none()

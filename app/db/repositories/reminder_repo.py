@@ -5,7 +5,7 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
-from app.db.models.reminder import REMINDER_STATUS_PENDING, Reminder
+from app.db.models.reminder import REMINDER_STATUS_DELETED, REMINDER_STATUS_PENDING, Reminder
 from app.db.repositories.base import BaseRepository
 
 ACTIVE_REMINDERS_LIMIT = 50
@@ -56,6 +56,6 @@ class ReminderRepository(BaseRepository[Reminder]):
         if reminder.user_id != user_id:
             return None
         reminder.deleted_at = datetime.now(timezone.utc)
-        reminder.status = "deleted"
+        reminder.status = REMINDER_STATUS_DELETED
         await self._session.flush()
         return reminder

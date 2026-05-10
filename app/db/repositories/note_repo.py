@@ -37,3 +37,22 @@ class NoteRepository(BaseRepository[Note]):
         note.deleted_at = datetime.now(timezone.utc)
         await self._session.flush()
         return note
+
+    async def soft_delete_owned(self, note_id: int, user_id: int) -> Note | None:
+        """Soft delete заметки с проверкой владельца (US-16).
+
+        Args:
+            note_id: ID заметки.
+            user_id: Telegram ID пользователя, запросившего удаление.
+
+        Returns:
+            Удалённую заметку или None если не найдена / нет прав.
+        """
+        note = await self.get_by_id(note_id)
+        if note is None or note.deleted_at is not None:
+            return None
+        if note.user_id != user_id:
+            return None
+        note.deleted_at = datetime.now(timezone.utc)
+        await self._session.flush()
+        return note

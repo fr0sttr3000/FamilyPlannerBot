@@ -10,7 +10,12 @@ from sqlalchemy import select
 
 from app.config import settings
 from app.db.models.event import Event
-from app.db.models.reminder import REMINDER_STATUS_FIRED, REMINDER_STATUS_PENDING, Reminder
+from app.db.models.reminder import (
+    REMINDER_STATUS_FIRED,
+    REMINDER_STATUS_PENDING,
+    REMINDER_STATUS_SKIPPED,
+    Reminder,
+)
 from app.db.models.task import Task
 from app.db.repositories.reminder_repo import ReminderRepository
 from app.db.session import async_session_factory
@@ -21,22 +26,54 @@ _bot: Bot | None = None
 
 
 async def _deliver_pending(label: str) -> int:
-    """Доставить все pending-напоминания. Возвращает количество доставленных."""
+    """Доставить все pending-напоминания. Возвращает количество обработанных (fired + skipped).
+
+    US-32: если напоминание привязано к задаче (task_id IS NOT NULL) и задача уже
+    выполнена или удалена — напоминание пропускается со статусом 'skipped'.
+    """
     count = 0
+    skipped = 0
     async with async_session_factory() as session:
         repo = ReminderRepository(session)
         due = await repo.get_due()
         for reminder in due:
             try:
-                await _bot.send_message(reminder.user_id, f"⏰ Напоминание:\n{reminder.text}")
+                # US-32: если напоминание привязано к задаче — проверить статус задачи
+                if reminder.task_id is not None:
+                    task_result = await session.get(Task, reminder.task_id)
+                    if (
+                        task_result is None
+                        or task_result.completed_at is not None
+                        or task_result.deleted_at is not None
+                    ):
+                        # Задача выполнена или удалена — пропустить напоминание
+                        reminder.status = REMINDER_STATUS_SKIPPED
+                        skipped += 1
+                        logger.info(
+                            "[%s] reminder_id=%d skipped: task_id=%d already done or deleted",
+                            label, reminder.id, reminder.task_id,
+                        )
+                        continue
+                    # Задача активна — контекстный текст
+                    text = (
+                        f"⚠️ Напоминание о задаче:\n"
+                        f"{task_result.text} (задача #{reminder.task_id})"
+                    )
+                else:
+                    text = f"⏰ Напоминание:\n{reminder.text}"
+
+                if _bot is None:
+                    logger.error("[%s] _bot is None — планировщик не инициализирован", label)
+                    break
+                await _bot.send_message(reminder.user_id, text)
                 reminder.status = REMINDER_STATUS_FIRED
                 reminder.fired_at = datetime.now(timezone.utc)
                 count += 1
             except Exception:
                 logger.exception("[%s] Ошибка доставки reminder_id=%d", label, reminder.id)
-        if count:
+        if count or skipped:
             await session.commit()
-    return count
+    return count + skipped
 
 
 async def deliver_reminders() -> None:
@@ -77,6 +114,10 @@ async def morning_digest() -> None:
     if tasks:
         lines.append("\n<b>Активные задачи:</b>")
         lines.extend(f"• {t.text}" for t in tasks)
+
+    if _bot is None:
+        logger.error("morning_digest: _bot is None — планировщик не инициализирован")
+        return
 
     message = "\n".join(lines)
     for user_id in settings.allowed_users:

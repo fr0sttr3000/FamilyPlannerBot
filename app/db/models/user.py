@@ -29,6 +29,9 @@ class User(Base):
     completed_tasks: Mapped[list["Task"]] = relationship(  # noqa: F821
         "Task", foreign_keys="Task.completed_by", back_populates="completer"
     )
+    assigned_tasks: Mapped[list["Task"]] = relationship(  # noqa: F821
+        "Task", foreign_keys="Task.assigned_to", back_populates="assignee"
+    )
     notes: Mapped[list["Note"]] = relationship("Note", back_populates="author")  # noqa: F821
     reminders: Mapped[list["Reminder"]] = relationship("Reminder", back_populates="owner")  # noqa: F821
     events: Mapped[list["Event"]] = relationship("Event", back_populates="creator")  # noqa: F821

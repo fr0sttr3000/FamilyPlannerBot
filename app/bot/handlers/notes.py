@@ -1,6 +1,6 @@
 """Handlers для управления заметками.
 
-Команды: /notes, /addnote
+Команды: /notes, /addnote, /delnote
 """
 import logging
 
@@ -17,20 +17,21 @@ router = Router(name="notes")
 
 NOTES_EMPTY = "Заметок нет. Добавьте первую: /addnote Текст заметки"
 ADDNOTE_USAGE = "Укажите текст заметки. Пример: /addnote Рецепт борща: ..."
+DELNOTE_USAGE = "Укажите номер заметки. Пример: /delnote 3"
 
 NOTE_PREVIEW_LENGTH = 100
 
 
 def _format_notes_list(notes: list) -> str:
     """Форматирует список заметок (превью 100 символов, US-15)."""
-    lines = ["📝 *Заметки:*\n"]
+    lines = ["📝 <b>Заметки:</b>\n"]
     for note in notes:
         author = note.author.first_name if note.author else "Неизвестно"
         date_str = note.created_at.strftime("%d.%m")
         preview = note.text[:NOTE_PREVIEW_LENGTH]
         if len(note.text) > NOTE_PREVIEW_LENGTH:
             preview += "…"
-        lines.append(f"• [{note.id}] {preview} _{author}, {date_str}_")
+        lines.append(f"• [{note.id}] {preview} <i>{author}, {date_str}</i>")
     return "\n".join(lines)
 
 
@@ -45,7 +46,7 @@ async def notes_handler(message: Message, session: AsyncSession) -> None:
         if not notes:
             await message.answer(NOTES_EMPTY)
             return
-        await message.answer(_format_notes_list(notes), parse_mode="Markdown")
+        await message.answer(_format_notes_list(notes), parse_mode="HTML")
         logger.info("user=%d action=notes_list count=%d", message.from_user.id, len(notes))
     except Exception:
         logger.exception("Ошибка в /notes user=%d", message.from_user.id)
@@ -71,3 +72,29 @@ async def addnote_handler(message: Message, session: AsyncSession) -> None:
     except Exception:
         logger.exception("Ошибка в /addnote user=%d", message.from_user.id)
         await message.answer("Не удалось добавить заметку. Попробуйте позже.")
+
+
+@router.message(Command("delnote"))
+async def delnote_handler(message: Message, session: AsyncSession) -> None:
+    """Удалить заметку по ID (US-16). Проверяет владельца."""
+    if message.from_user is None:
+        return
+    args = (message.text or "").removeprefix("/delnote").strip()
+    if not args.isdigit():
+        await message.answer(DELNOTE_USAGE)
+        return
+    note_id = int(args)
+    try:
+        service = NoteService(session)
+        result = await service.delete_note(note_id, message.from_user.id)
+        if result.success:
+            await message.answer(f"🗑 Заметка {note_id} удалена.")
+        else:
+            await message.answer(f"❌ {result.error}")
+        logger.info(
+            "user=%d action=delnote note_id=%d success=%s",
+            message.from_user.id, note_id, result.success,
+        )
+    except Exception:
+        logger.exception("Ошибка в /delnote user=%d note_id=%d", message.from_user.id, note_id)
+        await message.answer("Не удалось удалить заметку. Попробуйте позже.")
