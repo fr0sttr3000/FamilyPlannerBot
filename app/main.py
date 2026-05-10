@@ -13,7 +13,7 @@ from aiogram.enums import ParseMode
 from alembic import command as alembic_command
 from alembic.config import Config as AlembicConfig
 
-from app.bot.handlers import calendar, notes, reminders, start, tasks
+from app.bot.handlers import admin, calendar, notes, reminders, start, tasks
 from app.bot.middlewares.auth import AuthMiddleware
 from app.bot.middlewares.db import DBSessionMiddleware
 from app.config import settings
@@ -48,6 +48,7 @@ def build_dispatcher() -> Dispatcher:
     dp.include_router(notes.router)
     dp.include_router(reminders.router)
     dp.include_router(calendar.router)
+    dp.include_router(admin.router)
 
     return dp
 

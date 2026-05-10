@@ -47,3 +47,24 @@ class NoteService:
     async def get_active_notes(self) -> list[Note]:
         """Список активных заметок."""
         return await self._repo.get_active()
+
+    async def delete_note(self, note_id: int, user_id: int) -> NoteResult:
+        """Soft delete заметки с проверкой владельца (US-16).
+
+        Args:
+            note_id: ID заметки.
+            user_id: Telegram ID пользователя, запросившего удаление.
+
+        Returns:
+            NoteResult(success=True, note=...) при успехе,
+            NoteResult(success=False, error=...) если не найдена или нет прав.
+        """
+        note = await self._repo.soft_delete_owned(note_id, user_id)
+        if note is None:
+            return NoteResult(
+                success=False,
+                error="Заметка не найдена или у вас нет прав на её удаление.",
+            )
+        await self._session.commit()
+        logger.info("user=%d action=note_delete note_id=%d", user_id, note_id)
+        return NoteResult(success=True, note=note)
