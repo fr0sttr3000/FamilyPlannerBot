@@ -1,5 +1,6 @@
 # Секреты — никогда в git!
 .env
+.env.test
 
 # Python
 __pycache__/
