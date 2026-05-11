@@ -159,7 +159,7 @@ def upgrade() -> None:
     op.create_index(
         "idx_events_month",
         "events",
-        [sa.text("date_trunc('month', event_date::timestamp)")],
+        [sa.text("date_trunc('month', event_date)")],
         postgresql_where=sa.text("deleted_at IS NULL"),
     )
     op.create_index("idx_events_creator", "events", ["user_id", "event_date"])

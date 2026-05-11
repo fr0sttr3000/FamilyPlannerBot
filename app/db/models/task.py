@@ -2,7 +2,6 @@
 from datetime import datetime
 
 from sqlalchemy import BigInteger, ForeignKey, Index, String, Text, func
-from sqlalchemy.dialects.postgresql import TIMESTAMP
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.db.models.base import Base
@@ -27,9 +26,9 @@ class Task(Base):
     completed_by: Mapped[int | None] = mapped_column(
         BigInteger, ForeignKey("users.id", ondelete="SET NULL"), nullable=True
     )
-    completed_at: Mapped[datetime | None] = mapped_column(TIMESTAMP(timezone=True), nullable=True)
-    deleted_at: Mapped[datetime | None] = mapped_column(TIMESTAMP(timezone=True), nullable=True)
-    created_at: Mapped[datetime] = mapped_column(TIMESTAMP(timezone=True), nullable=False, server_default=func.now())
+    completed_at: Mapped[datetime | None] = mapped_column(nullable=True)
+    deleted_at: Mapped[datetime | None] = mapped_column(nullable=True)
+    created_at: Mapped[datetime] = mapped_column(nullable=False, server_default=func.now())
 
     # Новые поля Sprint 3 (US-33)
     assigned_to: Mapped[int | None] = mapped_column(

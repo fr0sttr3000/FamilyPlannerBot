@@ -2,7 +2,6 @@
 from datetime import datetime
 
 from sqlalchemy import BigInteger, ForeignKey, Index, Integer, String, Text, func
-from sqlalchemy.dialects.postgresql import TIMESTAMP
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.db.models.base import Base
@@ -23,13 +22,13 @@ class Reminder(Base):
         BigInteger, ForeignKey("users.id", ondelete="RESTRICT"), nullable=False
     )
     text: Mapped[str] = mapped_column(Text, nullable=False)
-    scheduled_at: Mapped[datetime] = mapped_column(TIMESTAMP(timezone=True), nullable=False)
+    scheduled_at: Mapped[datetime] = mapped_column(nullable=False)
     status: Mapped[str] = mapped_column(
         String(20), nullable=False, server_default=REMINDER_STATUS_PENDING
     )
-    fired_at: Mapped[datetime | None] = mapped_column(TIMESTAMP(timezone=True), nullable=True)
-    deleted_at: Mapped[datetime | None] = mapped_column(TIMESTAMP(timezone=True), nullable=True)
-    created_at: Mapped[datetime] = mapped_column(TIMESTAMP(timezone=True), nullable=False, server_default=func.now())
+    fired_at: Mapped[datetime | None] = mapped_column(nullable=True)
+    deleted_at: Mapped[datetime | None] = mapped_column(nullable=True)
+    created_at: Mapped[datetime] = mapped_column(nullable=False, server_default=func.now())
 
     # Новое поле Sprint 3 (US-32): ссылка на задачу
     task_id: Mapped[int | None] = mapped_column(
