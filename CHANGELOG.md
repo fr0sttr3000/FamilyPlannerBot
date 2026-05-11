@@ -7,6 +7,15 @@
 
 ---
 
+## [1.2.1] — 2026-05-11
+
+### Fixed
+- ORM-модели: все datetime-колонки переведены на `TIMESTAMP(timezone=True)` через `sqlalchemy.dialects.postgresql.TIMESTAMP`
+- Alembic-миграция `0003_timestamp_timezone`: `ALTER COLUMN` для 14 колонок в 5 таблицах (users, tasks, reminders, notes, events)
+- Устраняет `TypeError: can't compare offset-naive and offset-aware datetimes` в `reminder_scheduler.py` при работе с asyncpg
+
+---
+
 ## [1.2.0] — 2026-05-10
 
 ### Added
