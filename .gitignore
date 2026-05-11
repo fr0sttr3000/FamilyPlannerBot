@@ -1,5 +1,6 @@
 # Секреты — никогда в git!
 .env
+.env.test
 
 # Python
 __pycache__/
@@ -46,3 +47,8 @@ stage4-dev/
 stage5-testing/
 stage6-deploy/
 stage7-ops/
+tracking/
+
+# AI-сессии и post-mortem (только локально)
+POST-MORTEM-*.md
+AI-SESSION-*.md

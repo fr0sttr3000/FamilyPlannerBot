@@ -6,6 +6,7 @@
 from datetime import datetime
 
 from sqlalchemy import BigInteger, String, func
+from sqlalchemy.dialects.postgresql import TIMESTAMP
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.db.models.base import Base
@@ -19,8 +20,8 @@ class User(Base):
     id: Mapped[int] = mapped_column(BigInteger, primary_key=True, comment="Telegram User ID")
     username: Mapped[str | None] = mapped_column(String(255), nullable=True)
     first_name: Mapped[str] = mapped_column(String(255), nullable=False)
-    last_active_at: Mapped[datetime] = mapped_column(nullable=False, server_default=func.now())
-    created_at: Mapped[datetime] = mapped_column(nullable=False, server_default=func.now())
+    last_active_at: Mapped[datetime] = mapped_column(TIMESTAMP(timezone=True), nullable=False, server_default=func.now())
+    created_at: Mapped[datetime] = mapped_column(TIMESTAMP(timezone=True), nullable=False, server_default=func.now())
 
     # Relationships
     tasks: Mapped[list["Task"]] = relationship(  # noqa: F821
