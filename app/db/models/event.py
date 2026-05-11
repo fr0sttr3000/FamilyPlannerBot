@@ -2,6 +2,7 @@
 from datetime import date, datetime
 
 from sqlalchemy import BigInteger, Date, ForeignKey, Index, Text, func
+from sqlalchemy.dialects.postgresql import TIMESTAMP
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.db.models.base import Base
@@ -18,8 +19,8 @@ class Event(Base):
     )
     event_date: Mapped[date] = mapped_column(Date, nullable=False)
     text: Mapped[str] = mapped_column(Text, nullable=False)
-    deleted_at: Mapped[datetime | None] = mapped_column(nullable=True)
-    created_at: Mapped[datetime] = mapped_column(nullable=False, server_default=func.now())
+    deleted_at: Mapped[datetime | None] = mapped_column(TIMESTAMP(timezone=True), nullable=True)
+    created_at: Mapped[datetime] = mapped_column(TIMESTAMP(timezone=True), nullable=False, server_default=func.now())
 
     # Relationship
     creator: Mapped["User"] = relationship("User", back_populates="events")  # noqa: F821
